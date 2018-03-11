@@ -14,7 +14,9 @@ buff = []
 
 # callback chamada quando o servidor consegue se conectar ao broker
 def on_connect(client, userdata, flags, rc):
-    print("Connected with result code "+str(rc))
+    if rc == 0:
+        print("Conectado ao broker")
+
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
     # Sobrescreve a todos os topicos
@@ -23,11 +25,13 @@ def on_connect(client, userdata, flags, rc):
 # callback chamada quando o chega alguma mensagem
 def on_message(client, userdata, msg):
     global buff
-    # Aqui o servidor pega o que ele recebeu e taca no mongo
-    #print( msg.topic+" "+str(msg.payload))
-    print(msg,client,userdata)
+    print(msg.topic, str(msg.payload))
     entrada = json.loads( str(msg.payload) )
+
+    # Aqui o servidor pega o que ele recebeu e taca no mongo
     buff.append(entrada)
+
+    # Grava de tempos em tempos para diminuir o numero de grevacoes em disco
     if( len(buff) >= buffer_size):
         table.insert(buff)
         buff = []
